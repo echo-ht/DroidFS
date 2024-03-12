@@ -1,5 +1,41 @@
-name: Android Build
+name: Android CI
 
-on::push::branches: [ main ] ]pull_request::branches: [ main ]
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
 
-jobs::build::runs-on: ubuntu-latestlatestlateststeps::- uses: actions/checkout@v222- name: Set up JDKKuses: actions/setup-java@v22with::java-version::1111distribution::'adopt'''- name: Grant execute permission for gradlewewrun: chmod +x gradlewewew- name: Build with Gradle Gradlerun: ./gradlew assembleembleemble- name: Upload APKKuses: actions/upload-artifact@v22with::name: app apppath: app/build/outputs/apk/debug/app-debug.apkk
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: Set up JDK 11
+      uses: actions/setup-java@v2
+      with:
+        java-version: '11'
+        distribution: 'adopt'
+        
+    - name: Grant execute permission for gradlew
+      run: chmod +x ./gradlew
+
+    - name: Cache Gradle packages
+      uses: actions/cache@v2
+      with:
+        path: ~/.gradle/caches
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}
+        restore-keys: |
+          ${{ runner.os }}-gradle-
+
+    - name: Build with Gradle
+      run: ./gradlew build
+
+    - name: Upload APK
+      uses: actions/upload-artifact@v2
+      with:
+        name: apk
+        path: app/build/outputs/apk/release/app-release.apk
